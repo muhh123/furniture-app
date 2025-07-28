@@ -20,6 +20,8 @@ export default function ProductCard({ id, name, price, image }: ProductCardProps
         }
         setAdding(true);
         try {
+            // Ensure product id is a string (MongoDB ObjectId)
+            const productId = (id as any).toString();
             await fetch("http://localhost:5000/api/cart/add", {
                 method: "POST",
                 headers: {
@@ -28,11 +30,8 @@ export default function ProductCard({ id, name, price, image }: ProductCardProps
                 },
                 body: JSON.stringify({
                     userId: user._id,
-                    product: id,
-                    name,
-                    qty: 1,
-                    price,
-                    image,
+                    productId,
+                    qty: 1
                 }),
             });
             alert("Added to cart!");

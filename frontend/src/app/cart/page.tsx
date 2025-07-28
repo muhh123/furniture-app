@@ -14,14 +14,7 @@ export default function CartPage() {
             setLoading(true);
             setError("");
             try {
-                const res = await fetch("http://localhost:5000/api/cart", {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${user.token}`,
-                    },
-                    method: "POST",
-                    body: JSON.stringify({ userId: user._id }),
-                });
+                const res = await fetch(`http://localhost:5000/api/cart?userId=${user._id}`);
                 const data = await res.json();
                 setCartItems(data.cartItems || []);
             } catch {
@@ -44,7 +37,13 @@ export default function CartPage() {
                 },
                 body: JSON.stringify({ userId: user._id, productId }),
             });
-            setCartItems((items) => items.filter((item) => item.product !== productId));
+            setCartItems((items) => items.filter((item) => {
+                // Handle ObjectId type
+                if (typeof item.product === 'object' && item.product !== null && 'toString' in item.product) {
+                    return item.product.toString() !== productId.toString();
+                }
+                return item.product !== productId;
+            }));
         } catch {
             alert("Failed to remove item.");
         }
@@ -62,7 +61,7 @@ export default function CartPage() {
             ) : (
                 <div className="space-y-6">
                     {cartItems.map((item) => (
-                        <div key={item.product} className="flex items-center border rounded-lg p-4 shadow bg-white">
+                        <div key={typeof item.product === 'object' && item.product !== null && 'toString' in item.product ? item.product.toString() : item.product} className="flex items-center border rounded-lg p-4 shadow bg-white">
                             <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded mr-6" />
                             <div className="flex-1">
                                 <h2 className="text-lg font-semibold">{item.name}</h2>
@@ -72,7 +71,7 @@ export default function CartPage() {
                             </div>
                             <button
                                 className="ml-4 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                onClick={() => handleRemove(item.product)}
+                                onClick={() => handleRemove(typeof item.product === 'object' && item.product !== null && 'toString' in item.product ? item.product.toString() : item.product)}
                             >
                                 Remove
                             </button>
