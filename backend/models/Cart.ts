@@ -1,4 +1,4 @@
-mport mongoose, { Document, Schema, Types } from 'mongoose';i
+import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface ICartItem {
     product: Types.ObjectId;

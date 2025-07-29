@@ -1,21 +1,24 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 type ProductCardProps = {
     id: string | number;
     name: string;
     price: string;
     image: string;
+    showAddToCart?: boolean;
 };
 
-export default function ProductCard({ id, name, price, image }: ProductCardProps) {
+export default function ProductCard({ id, name, price, image, showAddToCart = true }: ProductCardProps) {
     const { user } = useAuth();
+    const router = useRouter();
     const [adding, setAdding] = useState(false);
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault();
         if (!user) {
-            alert("Please log in to add items to your cart.");
+            router.push("/login");
             return;
         }
         setAdding(true);
@@ -50,13 +53,15 @@ export default function ProductCard({ id, name, price, image }: ProductCardProps
                     <p className="text-primary font-bold">{price}</p>
                 </div>
             </Link>
-            <button
-                className="mt-2 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                onClick={handleAddToCart}
-                disabled={adding}
-            >
-                {adding ? "Adding..." : "Add to Cart"}
-            </button>
+            {showAddToCart && (
+                <button
+                    className="mt-2 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                    onClick={handleAddToCart}
+                    disabled={adding}
+                >
+                    {adding ? "Adding..." : "Add to Cart"}
+                </button>
+            )}
         </div>
     );
 }

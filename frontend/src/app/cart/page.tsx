@@ -1,16 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
     const { user } = useAuth();
+    const router = useRouter();
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
+        if (!user) return;
         const fetchCart = async () => {
-            if (!user) return;
             setLoading(true);
             setError("");
             try {
@@ -50,6 +53,21 @@ export default function CartPage() {
     };
 
     const total = cartItems.reduce((sum, item) => sum + Number(item.price) * (item.qty || 1), 0);
+
+    // Render login prompt if not authenticated
+    if (!user) {
+        return (
+            <main className="max-w-md mx-auto px-4 py-12 text-center">
+                <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
+                <p className="mb-6 text-gray-700">Please log in first before you can add to cart.</p>
+                <Link href="/login">
+                    <button className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700">
+                        Log In
+                    </button>
+                </Link>
+            </main>
+        );
+    }
 
     return (
         <main className="max-w-3xl mx-auto px-4 py-12">

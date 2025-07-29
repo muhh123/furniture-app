@@ -1,37 +1,51 @@
-const products = [
-    {
-        id: 1,
-        name: "Modern Sofa",
-        price: "$499",
-        image: "/sofa.png",
-    },
-    {
-        id: 2,
-        name: "Office Chair",
-        price: "$199",
-        image: "/office-chair.jpg",
-    },
-    {
-        id: 3,
-        name: "Dining Table",
-        price: "$399",
-        image: "/dining-table.jpg",
-    },
-];
+'use client';
+import { useEffect, useState } from "react";
+import ProductCard from "@/components/ProductCard";
 
 export default function FeaturedProducts() {
+    const [products, setProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            setError("");
+            try {
+                const res = await fetch("http://localhost:5000/api/products");
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to fetch products");
+                setProducts(data.slice(0, 3)); // Take first 3 as featured
+            } catch (err: any) {
+                setError(err.message || "Failed to fetch products");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
     return (
         <section className="my-8 sm:my-12">
             <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Featured Products</h2>
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
-                {products.map((product) => (
-                    <div key={product.id} className="border rounded-lg p-3 sm:p-4 shadow hover:shadow-lg transition">
-                        <img src={product.image} alt={product.name} className="w-full h-32 sm:h-40 object-cover rounded mb-3 sm:mb-4" />
-                        <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">{product.name}</h3>
-                        <p className="text-primary font-bold">{product.price}</p>
-                    </div>
-                ))}
-            </div>
+            {loading ? (
+                <p>Loading featured products...</p>
+            ) : error ? (
+                <p className="text-red-600">{error}</p>
+            ) : (
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
+                    {products.map((product) => (
+                        <ProductCard
+                            key={product._id}
+                            id={product._id}
+                            name={product.name}
+                            price={`$${product.price}`}
+                            image={product.image}
+                            showAddToCart={false}
+                        />
+                    ))}
+                </div>
+            )}
         </section>
     );
 } 

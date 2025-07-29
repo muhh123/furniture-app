@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
     const { user, logout } = useAuth();
+    const router = useRouter();
 
     return (
         <nav className="w-full bg-white border-b shadow-sm">
@@ -33,7 +35,7 @@ export default function Navbar() {
                             {user.isAdmin && <Link href="/admin">Admin</Link>}
                             <span className="text-gray-700">{user.name}</span>
                             <button
-                                onClick={logout}
+                                onClick={() => { logout(); router.push("/login"); }}
                                 className="ml-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
                             >
                                 Logout
@@ -57,7 +59,7 @@ export default function Navbar() {
                                 {user.isAdmin && <Link href="/admin" onClick={() => setOpen(false)}>Admin</Link>}
                                 <span className="text-gray-700">{user.name}</span>
                                 <button
-                                    onClick={() => { logout(); setOpen(false); }}
+                                    onClick={() => { logout(); setOpen(false); router.push("/login"); }}
                                     className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm text-left mt-1"
                                 >
                                     Logout
