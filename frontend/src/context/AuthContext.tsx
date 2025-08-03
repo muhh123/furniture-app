@@ -46,19 +46,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError("");
     try {
+      console.log('Attempting login with:', { email });
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || "Login failed");
-        throw new Error(data.message || "Login failed");
+      
+      console.log('Response status:', res.status);
+      
+      let data;
+      try {
+        data = await res.json().catch(() => ({}));
+        console.log('Response data:', data);
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        throw new Error('Invalid response from server');
       }
+      
+      if (!res.ok) {
+        const errorMsg = data?.message || `Login failed with status ${res.status}`;
+        console.error('Login error:', { 
+          status: res.status, 
+          statusText: res.statusText,
+          error: errorMsg,
+          responseData: data
+        });
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      if (!data || !data.token) {
+        const errorMsg = 'Invalid response from server: Missing token';
+        console.error(errorMsg, data);
+        throw new Error(errorMsg);
+      }
+      
       setUser(data);
+      return data;
     } catch (err: any) {
-      setError(err.message || "Network error");
+      console.error('Login caught error:', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack
+      });
+      const errorMsg = err.message || 'Failed to connect to the server';
+      setError(errorMsg);
       throw err;
     } finally {
       setLoading(false);
